@@ -1,0 +1,1188 @@
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Absensi Siswa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'roboto': ['Roboto', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#1976D2',
+                        secondary: '#388E3C',
+                        accent: '#F57C00',
+                        error: '#D32F2F',
+                        surface: '#FAFAFA',
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        body { font-family: 'Roboto', sans-serif; }
+        .card { box-shadow: 0 2px 4px rgba(0,0,0,0.1), 0 8px 16px rgba(0,0,0,0.1); }
+        .fab { box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+        .hidden { display: none; }
+        #scanner-container { width: 100%; max-width: 400px; margin: 0 auto; }
+        .btn-primary { background: #1976D2; }
+        .btn-primary:hover { background: #1565C0; }
+        .btn-secondary { background: #388E3C; }
+        .btn-secondary:hover { background: #2E7D32; }
+    </style>
+</head>
+<body class="bg-surface font-roboto">
+
+<!-- @COMPONENT: NavigationHeader -->
+<header class="bg-primary text-white shadow-lg sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-3">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <i class="fas fa-graduation-cap text-2xl"></i>
+                <h1 class="text-xl font-medium">Sistem Absensi Siswa</h1>
+            </div>
+            <nav class="hidden md:flex space-x-6">
+                <button onclick="showView('landing')" class="hover:text-blue-200 transition-colors">Home</button>
+                <button onclick="showView('admin-dashboard')" class="hover:text-blue-200 transition-colors">Admin</button>
+                <button onclick="showView('teacher-dashboard')" class="hover:text-blue-200 transition-colors">Guru</button>
+                <button onclick="logout()" class="hover:text-blue-200 transition-colors">
+                    <i class="fas fa-sign-out-alt mr-1"></i>Logout
+                </button>
+            </nav>
+            <button class="md:hidden" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+        </div>
+    </div>
+</header>
+<!-- @END_COMPONENT: NavigationHeader -->
+
+<!-- @COMPONENT: MobileMenu -->
+<div id="mobile-menu" class="hidden bg-primary text-white shadow-lg">
+    <div class="container mx-auto px-4 py-2 space-y-2">
+        <button onclick="showView('landing')" class="block w-full text-left py-2 hover:text-blue-200">Home</button>
+        <button onclick="showView('admin-dashboard')" class="block w-full text-left py-2 hover:text-blue-200">Admin</button>
+        <button onclick="showView('teacher-dashboard')" class="block w-full text-left py-2 hover:text-blue-200">Guru</button>
+        <button onclick="logout()" class="block w-full text-left py-2 hover:text-blue-200">Logout</button>
+    </div>
+</div>
+<!-- @END_COMPONENT: MobileMenu -->
+
+<main class="container mx-auto px-4 py-6">
+
+<!-- @COMPONENT: LandingPage -->
+<div id="landing-view" class="view">
+    <div class="max-w-4xl mx-auto">
+        <!-- Hero Section -->
+        <div class="text-center mb-12">
+            <div class="mb-6">
+                <i class="fas fa-qrcode text-6xl text-primary mb-4"></i>
+                <h1 class="text-4xl font-bold text-gray-800 mb-4">Sistem Absensi QR Code</h1>
+                <p class="text-xl text-gray-600">Solusi modern untuk presensi siswa dengan teknologi QR Code</p>
+            </div>
+        </div>
+
+        <!-- Login Cards -->
+        <div class="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto">
+            <!-- Admin Login -->
+            <div class="card bg-white rounded-lg p-6">
+                <div class="text-center mb-6">
+                    <i class="fas fa-user-shield text-4xl text-primary mb-3"></i>
+                    <h2 class="text-2xl font-semibold text-gray-800">Login Admin</h2>
+                    <p class="text-gray-600 mt-2">Kelola data siswa dan sistem</p>
+                </div>
+                <form class="space-y-4" data-mock="true">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Masukkan username" data-mock="true" value="admin">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                        <input type="password" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Masukkan password" data-mock="true" value="admin123">
+                    </div>
+                    <button type="button" onclick="showView('admin-dashboard')" class="w-full btn-primary text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Login sebagai Admin
+                    </button>
+                </form>
+            </div>
+
+            <!-- Teacher Login -->
+            <div class="card bg-white rounded-lg p-6">
+                <div class="text-center mb-6">
+                    <i class="fas fa-chalkboard-teacher text-4xl text-secondary mb-3"></i>
+                    <h2 class="text-2xl font-semibold text-gray-800">Login Guru</h2>
+                    <p class="text-gray-600 mt-2">Scan QR dan kelola presensi</p>
+                </div>
+                <form class="space-y-4" data-mock="true">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent" placeholder="Masukkan username" data-mock="true" value="guru1">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                        <input type="password" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent" placeholder="Masukkan password" data-mock="true" value="guru123">
+                    </div>
+                    <button type="button" onclick="showView('teacher-dashboard')" class="w-full btn-secondary text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Login sebagai Guru
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="mt-16">
+            <h3 class="text-2xl font-bold text-center text-gray-800 mb-8">Fitur Unggulan</h3>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="text-center p-6">
+                    <i class="fas fa-qrcode text-3xl text-primary mb-4"></i>
+                    <h4 class="font-semibold text-gray-800 mb-2">QR Code Unik</h4>
+                    <p class="text-gray-600 text-sm">Setiap siswa memiliki QR code permanen yang unik</p>
+                </div>
+                <div class="text-center p-6">
+                    <i class="fas fa-camera text-3xl text-primary mb-4"></i>
+                    <h4 class="font-semibold text-gray-800 mb-2">Scan via Browser</h4>
+                    <p class="text-gray-600 text-sm">Tidak perlu aplikasi khusus, scan langsung di browser</p>
+                </div>
+                <div class="text-center p-6">
+                    <i class="fas fa-chart-line text-3xl text-primary mb-4"></i>
+                    <h4 class="font-semibold text-gray-800 mb-2">Laporan Lengkap</h4>
+                    <p class="text-gray-600 text-sm">Laporan presensi dengan export ke CSV</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- @END_COMPONENT: LandingPage -->
+
+<!-- @COMPONENT: AdminDashboard -->
+<div id="admin-dashboard" class="view hidden">
+    <div class="mb-6">
+        <h2 class="text-3xl font-bold text-gray-800 mb-2">Dashboard Admin</h2>
+        <p class="text-gray-600">Kelola data siswa dan sistem presensi</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="card bg-white rounded-lg p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 text-primary">
+                    <i class="fas fa-users text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Total Siswa</p>
+                    <p class="text-2xl font-bold text-gray-900" data-bind="stats.totalStudents">324</p>
+                </div>
+            </div>
+        </div>
+        <div class="card bg-white rounded-lg p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100 text-secondary">
+                    <i class="fas fa-check text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Hadir Hari Ini</p>
+                    <p class="text-2xl font-bold text-gray-900" data-bind="stats.presentToday">289</p>
+                </div>
+            </div>
+        </div>
+        <div class="card bg-white rounded-lg p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-orange-100 text-accent">
+                    <i class="fas fa-clock text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Terlambat</p>
+                    <p class="text-2xl font-bold text-gray-900" data-bind="stats.lateToday">23</p>
+                </div>
+            </div>
+        </div>
+        <div class="card bg-white rounded-lg p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-red-100 text-error">
+                    <i class="fas fa-times text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Tidak Hadir</p>
+                    <p class="text-2xl font-bold text-gray-900" data-bind="stats.absentToday">12</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex flex-wrap gap-4 mb-8">
+        <button onclick="showModal('add-student-modal')" class="btn-primary text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+            <i class="fas fa-plus mr-2"></i>Tambah Siswa
+        </button>
+        <button onclick="showView('student-list')" class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors">
+            <i class="fas fa-list mr-2"></i>Daftar Siswa
+        </button>
+        <button onclick="showView('reports')" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors">
+            <i class="fas fa-chart-bar mr-2"></i>Laporan
+        </button>
+        <button onclick="showView('settings')" class="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-colors">
+            <i class="fas fa-cog mr-2"></i>Pengaturan
+        </button>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="card bg-white rounded-lg p-6">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">Aktivitas Terbaru</h3>
+        <div class="space-y-4">
+            <!-- @MAP: recentActivities.map(activity => ( -->
+            <div class="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0" data-mock="true">
+                <div class="flex items-center space-x-3">
+                    <div class="p-2 bg-green-100 rounded-full">
+                        <i class="fas fa-check text-secondary text-sm"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium text-gray-900" data-bind="activity.studentName">Ahmad Rizki</p>
+                        <p class="text-sm text-gray-600" data-bind="activity.details">Presensi masuk - XII IPA 1</p>
+                    </div>
+                </div>
+                <span class="text-sm text-gray-500" data-bind="activity.time">07:15</span>
+            </div>
+            <div class="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0" data-mock="true">
+                <div class="flex items-center space-x-3">
+                    <div class="p-2 bg-orange-100 rounded-full">
+                        <i class="fas fa-clock text-accent text-sm"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium text-gray-900" data-bind="activity.studentName">Siti Nurhaliza</p>
+                        <p class="text-sm text-gray-600" data-bind="activity.details">Presensi masuk (Terlambat) - XI IPS 2</p>
+                    </div>
+                </div>
+                <span class="text-sm text-gray-500" data-bind="activity.time">07:45</span>
+            </div>
+            <div class="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0" data-mock="true">
+                <div class="flex items-center space-x-3">
+                    <div class="p-2 bg-blue-100 rounded-full">
+                        <i class="fas fa-plus text-primary text-sm"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium text-gray-900">Admin</p>
+                        <p class="text-sm text-gray-600">Menambah siswa baru: Budi Santoso</p>
+                    </div>
+                </div>
+                <span class="text-sm text-gray-500">06:30</span>
+            </div>
+            <!-- @END_MAP )) -->
+        </div>
+    </div>
+</div>
+<!-- @END_COMPONENT: AdminDashboard -->
+
+<!-- @COMPONENT: TeacherDashboard -->
+<div id="teacher-dashboard" class="view hidden">
+    <div class="mb-6">
+        <h2 class="text-3xl font-bold text-gray-800 mb-2">Dashboard Guru</h2>
+        <p class="text-gray-600">Scan QR siswa untuk presensi dan lihat daftar hadir</p>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="card bg-white rounded-lg p-6">
+            <div class="text-center">
+                <i class="fas fa-qrcode text-6xl text-primary mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-800 mb-2">Scan QR Code</h3>
+                <p class="text-gray-600 mb-4">Arahkan kamera ke QR code siswa untuk presensi</p>
+                <button onclick="showView('qr-scanner')" class="btn-primary text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-camera mr-2"></i>Mulai Scan
+                </button>
+            </div>
+        </div>
+        <div class="card bg-white rounded-lg p-6">
+            <div class="text-center">
+                <i class="fas fa-list-check text-6xl text-secondary mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-800 mb-2">Daftar Hadir</h3>
+                <p class="text-gray-600 mb-4">Lihat daftar siswa yang sudah presensi hari ini</p>
+                <button onclick="showView('attendance-list')" class="btn-secondary text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">
+                    <i class="fas fa-eye mr-2"></i>Lihat Daftar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Today's Summary -->
+    <div class="card bg-white rounded-lg p-6 mb-8">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">Ringkasan Hari Ini</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="text-center p-4 bg-green-50 rounded-lg">
+                <i class="fas fa-check text-2xl text-secondary mb-2"></i>
+                <p class="text-2xl font-bold text-secondary" data-bind="todaySummary.present">289</p>
+                <p class="text-sm text-gray-600">Hadir</p>
+            </div>
+            <div class="text-center p-4 bg-orange-50 rounded-lg">
+                <i class="fas fa-clock text-2xl text-accent mb-2"></i>
+                <p class="text-2xl font-bold text-accent" data-bind="todaySummary.late">23</p>
+                <p class="text-sm text-gray-600">Terlambat</p>
+            </div>
+            <div class="text-center p-4 bg-blue-50 rounded-lg">
+                <i class="fas fa-user-injured text-2xl text-blue-600 mb-2"></i>
+                <p class="text-2xl font-bold text-blue-600" data-bind="todaySummary.sick">8</p>
+                <p class="text-sm text-gray-600">Sakit</p>
+            </div>
+            <div class="text-center p-4 bg-yellow-50 rounded-lg">
+                <i class="fas fa-hand-paper text-2xl text-yellow-600 mb-2"></i>
+                <p class="text-2xl font-bold text-yellow-600" data-bind="todaySummary.permission">4</p>
+                <p class="text-sm text-gray-600">Izin</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Scans -->
+    <div class="card bg-white rounded-lg p-6">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">Scan Terbaru</h3>
+        <div class="space-y-3">
+            <!-- @MAP: recentScans.map(scan => ( -->
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg" data-mock="true">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-check text-secondary"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium text-gray-900" data-bind="scan.studentName">Ahmad Rizki</p>
+                        <p class="text-sm text-gray-600" data-bind="scan.class">XII IPA 1 - Tepat Waktu</p>
+                    </div>
+                </div>
+                <span class="text-sm text-gray-500" data-bind="scan.time">07:15</span>
+            </div>
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg" data-mock="true">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-clock text-accent"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium text-gray-900" data-bind="scan.studentName">Siti Nurhaliza</p>
+                        <p class="text-sm text-gray-600" data-bind="scan.class">XI IPS 2 - Terlambat</p>
+                    </div>
+                </div>
+                <span class="text-sm text-gray-500" data-bind="scan.time">07:45</span>
+            </div>
+            <!-- @END_MAP )) -->
+        </div>
+    </div>
+</div>
+<!-- @END_COMPONENT: TeacherDashboard -->
+
+<!-- @COMPONENT: QRScanner -->
+<div id="qr-scanner" class="view hidden">
+    <div class="max-w-2xl mx-auto">
+        <div class="mb-6 text-center">
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">Scan QR Code Siswa</h2>
+            <p class="text-gray-600">Arahkan kamera ke QR code untuk presensi</p>
+        </div>
+
+        <!-- Scanner Interface -->
+        <div class="card bg-white rounded-lg p-6 mb-6">
+            <div id="scanner-container" class="mb-4">
+                <!-- @FUNCTIONALITY: QR scanner using html5-qrcode library should be implemented here -->
+                <div class="bg-gray-900 rounded-lg aspect-square flex items-center justify-center text-white" data-implementation="html5-qrcode scanner component">
+                    <div class="text-center">
+                        <i class="fas fa-camera text-6xl mb-4 opacity-50"></i>
+                        <p class="text-lg mb-2">Kamera akan aktif di sini</p>
+                        <p class="text-sm opacity-75">Pastikan izin kamera diaktifkan</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-center space-x-4">
+                <button id="start-scanner" class="btn-primary text-white px-6 py-2 rounded-lg" data-event="click:startScanner">
+                    <i class="fas fa-play mr-2"></i>Mulai Scanner
+                </button>
+                <button id="stop-scanner" class="bg-gray-600 text-white px-6 py-2 rounded-lg" data-event="click:stopScanner">
+                    <i class="fas fa-stop mr-2"></i>Berhenti
+                </button>
+            </div>
+        </div>
+
+        <!-- Scan Result -->
+        <div id="scan-result" class="card bg-white rounded-lg p-6 hidden" data-mock="true">
+            <div class="text-center mb-4">
+                <i class="fas fa-check-circle text-4xl text-secondary mb-3"></i>
+                <h3 class="text-xl font-semibold text-gray-800">QR Code Terdeteksi!</h3>
+            </div>
+            
+            <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nama Siswa</label>
+                        <p class="text-lg font-semibold" data-bind="scannedStudent.name">Ahmad Rizki</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Kelas</label>
+                        <p class="text-lg font-semibold" data-bind="scannedStudent.class">XII IPA 1</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">NIS</label>
+                        <p class="text-lg font-semibold" data-bind="scannedStudent.nis">2023001</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Waktu Scan</label>
+                        <p class="text-lg font-semibold" data-bind="scannedStudent.scanTime">07:15:32</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Selection -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Status Kehadiran</label>
+                <div class="grid grid-cols-2 gap-3">
+                    <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                        <input type="radio" name="status" value="tepat_waktu" class="text-secondary focus:ring-secondary" checked data-mock="true">
+                        <span class="ml-2 text-sm font-medium">Tepat Waktu</span>
+                    </label>
+                    <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                        <input type="radio" name="status" value="terlambat" class="text-accent focus:ring-accent" data-mock="true">
+                        <span class="ml-2 text-sm font-medium">Terlambat</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Additional Notes -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Keterangan (Opsional)</label>
+                <textarea class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" rows="3" placeholder="Keterangan tambahan..." data-mock="true"></textarea>
+            </div>
+
+            <div class="flex space-x-3">
+                <button class="flex-1 btn-secondary text-white py-3 rounded-lg" data-event="click:saveAttendance">
+                    <i class="fas fa-save mr-2"></i>Simpan Presensi
+                </button>
+                <button class="px-6 bg-gray-600 text-white py-3 rounded-lg" data-event="click:scanAnother">
+                    <i class="fas fa-qrcode mr-2"></i>Scan Lagi
+                </button>
+            </div>
+        </div>
+
+        <!-- Manual Entry Option -->
+        <div class="card bg-white rounded-lg p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Presensi Manual</h3>
+            <p class="text-gray-600 mb-4">Jika QR tidak dapat discan, gunakan input manual</p>
+            <div class="flex space-x-3">
+                <input type="text" placeholder="Masukkan NIS siswa" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" data-mock="true">
+                <button class="btn-primary text-white px-6 py-2 rounded-lg">
+                    <i class="fas fa-search mr-2"></i>Cari
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- @END_COMPONENT: QRScanner -->
+
+<!-- @COMPONENT: StudentList -->
+<div id="student-list" class="view hidden">
+    <div class="mb-6">
+        <h2 class="text-3xl font-bold text-gray-800 mb-2">Daftar Siswa</h2>
+        <p class="text-gray-600">Kelola data siswa dan QR code</p>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="card bg-white rounded-lg p-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Cari Siswa</label>
+                <input type="text" placeholder="Nama atau NIS..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" data-mock="true">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Kelas</label>
+                <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" data-mock="true">
+                    <option>Semua Kelas</option>
+                    <option>X IPA 1</option>
+                    <option>X IPA 2</option>
+                    <option>XI IPA 1</option>
+                    <option>XII IPA 1</option>
+                </select>
+            </div>
+            <div class="flex items-end">
+                <button class="w-full btn-primary text-white py-2 rounded-lg">
+                    <i class="fas fa-search mr-2"></i>Cari
+                </button>
+            </div>
+            <div class="flex items-end">
+                <button onclick="showModal('add-student-modal')" class="w-full btn-secondary text-white py-2 rounded-lg">
+                    <i class="fas fa-plus mr-2"></i>Tambah Siswa
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Table -->
+    <div class="card bg-white rounded-lg overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Siswa</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kelas</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">QR Code</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <!-- @MAP: students.map(student => ( -->
+                    <tr class="hover:bg-gray-50" data-mock="true">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <span class="text-primary font-semibold" data-bind="student.initials">AR</span>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900" data-bind="student.name">Ahmad Rizki</div>
+                                    <div class="text-sm text-gray-500" data-bind="student.nis">NIS: 2023001</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="text-sm text-gray-900" data-bind="student.class">XII IPA 1</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <button onclick="showQRCode('2023001')" class="text-primary hover:text-blue-700">
+                                <i class="fas fa-qrcode mr-1"></i>Lihat QR
+                            </button>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800" data-bind="student.status">Aktif</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                            <button class="text-blue-600 hover:text-blue-900" data-event="click:editStudent">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="text-green-600 hover:text-green-900" data-event="click:printQR">
+                                <i class="fas fa-print"></i>
+                            </button>
+                            <button class="text-red-600 hover:text-red-900" data-event="click:deleteStudent">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50" data-mock="true">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center">
+                                    <span class="text-pink-600 font-semibold" data-bind="student.initials">SN</span>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900" data-bind="student.name">Siti Nurhaliza</div>
+                                    <div class="text-sm text-gray-500" data-bind="student.nis">NIS: 2023002</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="text-sm text-gray-900" data-bind="student.class">XI IPS 2</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <button onclick="showQRCode('2023002')" class="text-primary hover:text-blue-700">
+                                <i class="fas fa-qrcode mr-1"></i>Lihat QR
+                            </button>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800" data-bind="student.status">Aktif</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                            <button class="text-blue-600 hover:text-blue-900" data-event="click:editStudent">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="text-green-600 hover:text-green-900" data-event="click:printQR">
+                                <i class="fas fa-print"></i>
+                            </button>
+                            <button class="text-red-600 hover:text-red-900" data-event="click:deleteStudent">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <!-- @END_MAP )) -->
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+            <div class="flex-1 flex justify-between sm:hidden">
+                <button class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Previous</button>
+                <button class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Next</button>
+            </div>
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm text-gray-700">Menampilkan <span class="font-medium">1</span> sampai <span class="font-medium">10</span> dari <span class="font-medium">324</span> siswa</p>
+                </div>
+                <div>
+                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                        <button class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="bg-primary border-primary text-white relative inline-flex items-center px-4 py-2 border text-sm font-medium">1</button>
+                        <button class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">2</button>
+                        <button class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">3</button>
+                        <button class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- @END_COMPONENT: StudentList -->
+
+<!-- @COMPONENT: AttendanceList -->
+<div id="attendance-list" class="view hidden">
+    <div class="mb-6">
+        <h2 class="text-3xl font-bold text-gray-800 mb-2">Daftar Kehadiran Hari Ini</h2>
+        <p class="text-gray-600" data-bind="currentDate">Senin, 15 Januari 2024</p>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="card bg-white rounded-lg p-4">
+            <div class="text-center">
+                <i class="fas fa-check text-2xl text-secondary mb-2"></i>
+                <p class="text-2xl font-bold text-secondary" data-bind="todayStats.present">289</p>
+                <p class="text-sm text-gray-600">Hadir</p>
+            </div>
+        </div>
+        <div class="card bg-white rounded-lg p-4">
+            <div class="text-center">
+                <i class="fas fa-clock text-2xl text-accent mb-2"></i>
+                <p class="text-2xl font-bold text-accent" data-bind="todayStats.late">23</p>
+                <p class="text-sm text-gray-600">Terlambat</p>
+            </div>
+        </div>
+        <div class="card bg-white rounded-lg p-4">
+            <div class="text-center">
+                <i class="fas fa-user-injured text-2xl text-blue-600 mb-2"></i>
+                <p class="text-2xl font-bold text-blue-600" data-bind="todayStats.sick">8</p>
+                <p class="text-sm text-gray-600">Sakit</p>
+            </div>
+        </div>
+        <div class="card bg-white rounded-lg p-4">
+            <div class="text-center">
+                <i class="fas fa-times text-2xl text-error mb-2"></i>
+                <p class="text-2xl font-bold text-error" data-bind="todayStats.absent">4</p>
+                <p class="text-sm text-gray-600">Alpha</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter -->
+    <div class="card bg-white rounded-lg p-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Kelas</label>
+                <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" data-mock="true">
+                    <option>Semua Kelas</option>
+                    <option>X IPA 1</option>
+                    <option>X IPA 2</option>
+                    <option>XI IPA 1</option>
+                    <option>XII IPA 1</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" data-mock="true">
+                    <option>Semua Status</option>
+                    <option>Hadir</option>
+                    <option>Terlambat</option>
+                    <option>Sakit</option>
+                    <option>Izin</option>
+                    <option>Alpha</option>
+                </select>
+            </div>
+            <div class="flex items-end">
+                <button class="w-full btn-primary text-white py-2 rounded-lg">
+                    <i class="fas fa-filter mr-2"></i>Filter
+                </button>
+            </div>
+            <div class="flex items-end">
+                <button class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700">
+                    <i class="fas fa-file-excel mr-2"></i>Export CSV
+                </button>
+            </div>
+            <div class="flex items-end">
+                <button class="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700">
+                    <i class="fas fa-file-pdf mr-2"></i>Export PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance Table -->
+    <div class="card bg-white rounded-lg overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Siswa</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kelas</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <!-- @MAP: attendanceToday.map(record => ( -->
+                    <tr class="hover:bg-gray-50" data-mock="true">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <span class="text-primary font-semibold text-sm" data-bind="record.initials">AR</span>
+                                </div>
+                                <div class="ml-3">
+                                    <div class="text-sm font-medium text-gray-900" data-bind="record.studentName">Ahmad Rizki</div>
+                                    <div class="text-sm text-gray-500" data-bind="record.nis">2023001</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-bind="record.class">XII IPA 1</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-bind="record.time">07:15:32</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800" data-bind="record.status">Tepat Waktu</span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-900" data-bind="record.notes">-</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button class="text-blue-600 hover:text-blue-900" data-event="click:editAttendance">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50" data-mock="true">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-pink-100 rounded-full flex items-center justify-center">
+                                    <span class="text-pink-600 font-semibold text-sm" data-bind="record.initials">SN</span>
+                                </div>
+                                <div class="ml-3">
+                                    <div class="text-sm font-medium text-gray-900" data-bind="record.studentName">Siti Nurhaliza</div>
+                                    <div class="text-sm text-gray-500" data-bind="record.nis">2023002</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-bind="record.class">XI IPS 2</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-bind="record.time">07:45:12</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800" data-bind="record.status">Terlambat</span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-900" data-bind="record.notes">Macet di jalan</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button class="text-blue-600 hover:text-blue-900" data-event="click:editAttendance">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <!-- @END_MAP )) -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<!-- @END_COMPONENT: AttendanceList -->
+
+<!-- @COMPONENT: Reports -->
+<div id="reports" class="view hidden">
+    <div class="mb-6">
+        <h2 class="text-3xl font-bold text-gray-800 mb-2">Laporan Presensi</h2>
+        <p class="text-gray-600">Analisis kehadiran siswa dan export data</p>
+    </div>
+
+    <!-- Report Filters -->
+    <div class="card bg-white rounded-lg p-6 mb-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">Filter Laporan</h3>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai</label>
+                <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" data-mock="true" value="2024-01-01">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Akhir</label>
+                <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" data-mock="true" value="2024-01-15">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Kelas</label>
+                <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" data-mock="true">
+                    <option>Semua Kelas</option>
+                    <option>X IPA 1</option>
+                    <option>X IPA 2</option>
+                    <option>XI IPA 1</option>
+                    <option>XII IPA 1</option>
+                </select>
+            </div>
+            <div class="flex items-end">
+                <button class="w-full btn-primary text-white py-2 rounded-lg">
+                    <i class="fas fa-search mr-2"></i>Generate Laporan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Summary -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div class="card bg-white rounded-lg p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Rata-rata Kehadiran</p>
+                    <p class="text-2xl font-bold text-secondary" data-bind="reportStats.averageAttendance">89.2%</p>
+                </div>
+                <div class="p-3 bg-green-100 rounded-full">
+                    <i class="fas fa-chart-line text-secondary text-xl"></i>
+                </div>
+            </div>
+        </div>
+        <div class="card bg-white rounded-lg p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Total Keterlambatan</p>
+                    <p class="text-2xl font-bold text-accent" data-bind="reportStats.totalLate">234</p>
+                </div>
+                <div class="p-3 bg-orange-100 rounded-full">
+                    <i class="fas fa-clock text-accent text-xl"></i>
+                </div>
+            </div>
+        </div>
+        <div class="card bg-white rounded-lg p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Siswa Bermasalah</p>
+                    <p class="text-2xl font-bold text-error" data-bind="reportStats.problematicStudents">12</p>
+                </div>
+                <div class="p-3 bg-red-100 rounded-full">
+                    <i class="fas fa-exclamation-triangle text-error text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Options -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div class="card bg-white rounded-lg p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Export Data</h3>
+            <div class="space-y-3">
+                <button class="w-full flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                    <div class="flex items-center">
+                        <i class="fas fa-file-excel text-green-600 text-xl mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Export ke Excel</p>
+                            <p class="text-sm text-gray-500">Data lengkap dengan formatting</p>
+                        </div>
+                    </div>
+                    <i class="fas fa-download text-gray-400"></i>
+                </button>
+                <button class="w-full flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                    <div class="flex items-center">
+                        <i class="fas fa-file-csv text-blue-600 text-xl mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Export ke CSV</p>
+                            <p class="text-sm text-gray-500">Data mentah untuk analisis</p>
+                        </div>
+                    </div>
+                    <i class="fas fa-download text-gray-400"></i>
+                </button>
+                <button class="w-full flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                    <div class="flex items-center">
+                        <i class="fas fa-file-pdf text-red-600 text-xl mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Export ke PDF</p>
+                            <p class="text-sm text-gray-500">Laporan siap cetak</p>
+                        </div>
+                    </div>
+                    <i class="fas fa-download text-gray-400"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Reports -->
+        <div class="card bg-white rounded-lg p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Laporan Cepat</h3>
+            <div class="space-y-3">
+                <button class="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                    <p class="font-medium text-gray-900">Laporan Harian</p>
+                    <p class="text-sm text-gray-500">Presensi hari ini</p>
+                </button>
+                <button class="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                    <p class="font-medium text-gray-900">Laporan Mingguan</p>
+                    <p class="text-sm text-gray-500">7 hari terakhir</p>
+                </button>
+                <button class="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                    <p class="font-medium text-gray-900">Laporan Bulanan</p>
+                    <p class="text-sm text-gray-500">Bulan ini</p>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Report Table -->
+    <div class="card bg-white rounded-lg overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-800">Data Presensi Detail</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Siswa</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kelas</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hadir</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Terlambat</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sakit</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Izin</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alpha</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">%</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <!-- @MAP: reportData.map(record => ( -->
+                    <tr class="hover:bg-gray-50" data-mock="true">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <span class="text-primary font-semibold text-sm" data-bind="record.initials">AR</span>
+                                </div>
+                                <div class="ml-3">
+                                    <div class="text-sm font-medium text-gray-900" data-bind="record.name">Ahmad Rizki</div>
+                                    <div class="text-sm text-gray-500" data-bind="record.nis">2023001</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-bind="record.class">XII IPA 1</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-secondary font-semibold" data-bind="record.present">12</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-accent font-semibold" data-bind="record.late">2</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600 font-semibold" data-bind="record.sick">1</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-yellow-600 font-semibold" data-bind="record.permission">0</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-error font-semibold" data-bind="record.absent">0</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold" data-bind="record.percentage">93.3%</td>
+                    </tr>
+                    <!-- @END_MAP )) -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<!-- @END_COMPONENT: Reports -->
+
+</main>
+
+<!-- @COMPONENT: AddStudentModal -->
+<div id="add-student-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-lg max-w-md w-full max-h-screen overflow-y-auto">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Tambah Siswa Baru</h3>
+                <button onclick="hideModal('add-student-modal')" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form class="space-y-4" data-mock="true">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
+                    <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Masukkan nama lengkap" required data-mock="true">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">NIS</label>
+                    <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Nomor Induk Siswa" required data-mock="true">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Kelas</label>
+                    <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" required data-mock="true">
+                        <option value="">Pilih Kelas</option>
+                        <option value="X-IPA-1">X IPA 1</option>
+                        <option value="X-IPA-2">X IPA 2</option>
+                        <option value="XI-IPA-1">XI IPA 1</option>
+                        <option value="XI-IPA-2">XI IPA 2</option>
+                        <option value="XII-IPA-1">XII IPA 1</option>
+                        <option value="XII-IPA-2">XII IPA 2</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Kelamin</label>
+                    <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" required data-mock="true">
+                        <option value="">Pilih Jenis Kelamin</option>
+                        <option value="L">Laki-laki</option>
+                        <option value="P">Perempuan</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Lahir</label>
+                    <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" required data-mock="true">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
+                    <textarea class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" rows="3" placeholder="Alamat lengkap" data-mock="true"></textarea>
+                </div>
+                
+                <div class="flex space-x-3 pt-4">
+                    <button type="button" onclick="hideModal('add-student-modal')" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50">
+                        Batal
+                    </button>
+                    <button type="submit" class="flex-1 btn-primary text-white px-4 py-2 rounded-md hover:bg-blue-700" data-event="click:saveStudent">
+                        <i class="fas fa-save mr-2"></i>Simpan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- @END_COMPONENT: AddStudentModal -->
+
+<!-- @COMPONENT: QRCodeModal -->
+<div id="qr-code-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-lg max-w-sm w-full">
+        <div class="p-6 text-center">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">QR Code Siswa</h3>
+                <button onclick="hideModal('qr-code-modal')" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="mb-4">
+                <p class="font-medium text-gray-900" data-bind="selectedStudent.name">Ahmad Rizki</p>
+                <p class="text-sm text-gray-600" data-bind="selectedStudent.nis">NIS: 2023001</p>
+                <p class="text-sm text-gray-600" data-bind="selectedStudent.class">XII IPA 1</p>
+            </div>
+            
+            <!-- QR Code Display -->
+            <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+                <div class="w-48 h-48 mx-auto bg-white border-2 border-gray-200 rounded-lg flex items-center justify-center" data-implementation="QR code should be generated here using PHP QR Code library">
+                    <div class="text-center text-gray-500">
+                        <i class="fas fa-qrcode text-6xl mb-2"></i>
+                        <p class="text-sm">QR Code</p>
+                        <p class="text-xs" data-bind="qrCode.data">STD_2023001</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex space-x-3">
+                <button class="flex-1 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700" data-event="click:printQR">
+                    <i class="fas fa-print mr-2"></i>Cetak
+                </button>
+                <button class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700" data-event="click:downloadQR">
+                    <i class="fas fa-download mr-2"></i>Download
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- @END_COMPONENT: QRCodeModal -->
+
+<!-- @COMPONENT: FloatingActionButton -->
+<div class="fixed bottom-6 right-6">
+    <button onclick="showView('qr-scanner')" class="fab bg-primary text-white w-14 h-14 rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors">
+        <i class="fas fa-qrcode text-xl"></i>
+    </button>
+</div>
+<!-- @END_COMPONENT: FloatingActionButton -->
+
+<script>
+(function() {
+    // TODO: Implement business logic, API calls, and state management
+    
+    // View Management
+    function showView(viewId) {
+        // Hide all views
+        const views = document.querySelectorAll('.view');
+        views.forEach(view => view.classList.add('hidden'));
+        
+        // Show selected view
+        const targetView = document.getElementById(viewId);
+        if (targetView) {
+            targetView.classList.remove('hidden');
+        }
+        
+        // Close mobile menu
+        document.getElementById('mobile-menu').classList.add('hidden');
+    }
+    
+    // Modal Management
+    function showModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('hidden');
+        }
+    }
+    
+    function hideModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+    }
+    
+    // Mobile Menu Toggle
+    function toggleMobileMenu() {
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileMenu.classList.toggle('hidden');
+    }
+    
+    // QR Code Display
+    function showQRCode(studentId) {
+        // TODO: Fetch student data and generate QR code
+        showModal('qr-code-modal');
+    }
+    
+    // Logout function
+    function logout() {
+        if (confirm('Yakin ingin logout?')) {
+            showView('landing');
+            // TODO: Clear session and redirect
+        }
+    }
+    
+    // QR Scanner functions
+    function startScanner() {
+        // TODO: Initialize html5-qrcode scanner
+        console.log('Starting QR scanner...');
+        // Show mock scan result after 3 seconds
+        setTimeout(() => {
+            document.getElementById('scan-result').classList.remove('hidden');
+        }, 3000);
+    }
+    
+    function stopScanner() {
+        // TODO: Stop html5-qrcode scanner
+        console.log('Stopping QR scanner...');
+    }
+    
+    function saveAttendance() {
+        // TODO: Save attendance data to database
+        alert('Presensi berhasil disimpan!');
+        showView('teacher-dashboard');
+    }
+    
+    function scanAnother() {
+        document.getElementById('scan-result').classList.add('hidden');
+        // TODO: Restart scanner
+    }
+    
+    // Export global functions
+    window.showView = showView;
+    window.showModal = showModal;
+    window.hideModal = hideModal;
+    window.toggleMobileMenu = toggleMobileMenu;
+    window.showQRCode = showQRCode;
+    window.logout = logout;
+    window.startScanner = startScanner;
+    window.stopScanner = stopScanner;
+    window.saveAttendance = saveAttendance;
+    window.scanAnother = scanAnother;
+    
+    // Initialize app
+    document.addEventListener('DOMContentLoaded', function() {
+        showView('landing');
+    });
+})();
+</script>
+
+</body>
+</html>
